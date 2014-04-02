@@ -32,12 +32,14 @@ class ControllerBase
 
   # set the response status code and header
   def redirect_to(url)
-    raise "Already rendered" if already_built_response?
+    raise "Already rendered man" if already_built_response?
     @res.status = 302
     @res.header["location"] = url
 
     # set_redirect(302, url)
     @already_built_response = true
+
+    session.store_session(@res)
   end
 
   # use ERB and binding to evaluate templates
@@ -48,13 +50,17 @@ class ControllerBase
     #how to check if this exists before next line
 
     contents = File.read(path)
+    #contents = File.read("something/chickens/dinner.rb")
     erb = ERB.new(contents).result(binding)
 
     render_content(erb, "text/html")
+    session.store_session(@res)
   end
 
   # method exposing a `Session` object
   def session
+
+    @session ||= Session.new(@req)
 
   end
 
