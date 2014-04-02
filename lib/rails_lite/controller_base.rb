@@ -4,6 +4,7 @@ require_relative 'params'
 require_relative 'session'
 
 
+
 class ControllerBase
   attr_reader :params, :req, :res
 
@@ -18,11 +19,10 @@ class ControllerBase
   # set the responses content type to the given type
   # later raise an error if the developer tries to double render
   def render_content(content, type)
-    raise "Already rendered" if @already_built_response
+    raise "Already rendered" if already_built_response?
     @res.body = content
     @res.content_type = type
     @already_built_response = true
-
   end
 
   # helper method to alias @already_built_response
@@ -32,15 +32,30 @@ class ControllerBase
 
   # set the response status code and header
   def redirect_to(url)
+    raise "Already rendered" if already_built_response?
+    @res.status = 302
+    @res.header["location"] = url
+
+    # set_redirect(302, url)
+    @already_built_response = true
   end
 
   # use ERB and binding to evaluate templates
   # pass the rendered html to render_content
   def render(template_name)
+
+    path = File.join("views", "#{self.class}".underscore, "#{template_name}.html.erb")
+    #how to check if this exists before next line
+
+    contents = File.read(path)
+    erb = ERB.new(contents).result(binding)
+
+    render_content(erb, "text/html")
   end
 
   # method exposing a `Session` object
   def session
+
   end
 
   # use this with the router to call action_name (:index, :show, :create...)
