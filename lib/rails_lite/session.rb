@@ -8,11 +8,11 @@ class Session
 
 
     req.cookies.each do |cookie|
-      @my_val = cookie.value if cookie.name == '_rails_lite_app'
+      my_val = cookie.value if cookie.name == '_rails_lite_app'
     end
 
-    if @my_val
-      @hash = JSON.parse(@my_val)
+    if my_val
+      @hash = JSON.parse(my_val)
     else
       @hash = {}
     end

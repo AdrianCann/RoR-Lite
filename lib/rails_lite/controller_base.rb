@@ -22,12 +22,15 @@ class ControllerBase
     raise "Already rendered" if already_built_response?
     @res.body = content
     @res.content_type = type
+    
+    session.store_session(@res)
+    
     @already_built_response = true
   end
 
   # helper method to alias @already_built_response
   def already_built_response?
-    @already_built_response
+    !!@already_built_response
   end
 
   # set the response status code and header
@@ -40,13 +43,14 @@ class ControllerBase
     @already_built_response = true
 
     session.store_session(@res)
+    nil
   end
 
   # use ERB and binding to evaluate templates
   # pass the rendered html to render_content
   def render(template_name)
 
-    path = File.join("views", "#{self.class}".underscore, "#{template_name}.html.erb")
+    path = File.join("views", self.class.name.underscore, "#{template_name}.html.erb")
     #how to check if this exists before next line
 
     contents = File.read(path)
@@ -54,7 +58,6 @@ class ControllerBase
     erb = ERB.new(contents).result(binding)
 
     render_content(erb, "text/html")
-    session.store_session(@res)
   end
 
   # method exposing a `Session` object
@@ -66,5 +69,6 @@ class ControllerBase
 
   # use this with the router to call action_name (:index, :show, :create...)
   def invoke_action(name)
+    
   end
 end

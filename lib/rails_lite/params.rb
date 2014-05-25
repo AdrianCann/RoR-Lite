@@ -10,23 +10,37 @@ class Params
     decoded = URI.decode_www_form(req.query_string)
 
     @params = {}
+    
+    @params.merge!(route_params)
+    
+    @params.merge!(parse_www_encoded_form(req.body)) if req.body
+    @params.merge!(parse_www_encoded_form(req.query_string)) if req.query_string
+    
+    
+    @permited_params = []
 
     #URI::decode_www_form("hi[hey]=5", enc=Encoding::UTF_8)
   end
 
   def [](key)
+    @params[key]
   end
 
   def permit(*keys)
+    @permited_params.push(*keys)
   end
 
   def require(key)
+    raise AttributeNotFoundError unless @params.has_key?(key)
+    @params[key]
   end
 
   def permitted?(key)
+    @permited_params.include?(key)
   end
 
   def to_s
+    @params.to_json.to_s
   end
 
   class AttributeNotFoundError < ArgumentError; end;
@@ -38,12 +52,32 @@ class Params
   # should return
   # { "user" => { "address" => { "street" => "main", "zip" => "89436" } } }
   def parse_www_encoded_form(www_encoded_form)
+    params = {}
 
+    pairs = URI.decode_www_form(www_encoded_form)
+    
+    pairs = URI.decode_www_form(www_encoded_form)
+    pairs.each do |full_key, val|
+      scope = params
+
+      key_seq = parse_key(full_key)
+      key_seq.each_with_index do |key, idx|
+        if (idx + 1) == key_seq.count
+          scope[key] = val
+        else
+          scope[key] ||= {}
+          scope = scope[key]
+        end
+      end
+    end
+
+    params
 
   end
 
   # this should return an array
   # user[address][street] should return ['user', 'address', 'street']
   def parse_key(key)
+    key.split(/\[|\]\[|\]/)
   end
 end
