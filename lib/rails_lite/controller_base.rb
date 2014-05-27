@@ -12,7 +12,7 @@ class ControllerBase
   def initialize(req, res, route_params = {})
     @req = req
     @res = res
-    @params = route_params
+    @params = Params.new(req, route_params)
   end
 
   # populate the response with content
@@ -69,6 +69,8 @@ class ControllerBase
 
   # use this with the router to call action_name (:index, :show, :create...)
   def invoke_action(name)
-    
+    self.send(name)
+    self.render(name) unless already_built_response?
+    nil
   end
 end

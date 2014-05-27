@@ -6,7 +6,7 @@ class Session
   # deserialize the cookie into a hash
   def initialize(req)
 
-
+    my_val = nil
     req.cookies.each do |cookie|
       my_val = cookie.value if cookie.name == '_rails_lite_app'
     end
