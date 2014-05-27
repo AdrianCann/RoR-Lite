@@ -6,19 +6,17 @@ class Params
   # 2. post body(nested)
   # 3. route params
   def initialize(req, route_params = {})
-
-    decoded = URI.decode_www_form(req.query_string)
-
     @params = {}
-    
-    @params.merge!(route_params)
-    
-    @params.merge!(parse_www_encoded_form(req.body)) if req.body
-    @params.merge!(parse_www_encoded_form(req.query_string)) if req.query_string
-    
-    
-    @permited_params = []
 
+    @params.merge!(route_params)
+    if req.body
+      @params.merge!(parse_www_encoded_form(req.body))
+    end
+    if req.query_string
+      @params.merge!(parse_www_encoded_form(req.query_string))
+    end
+
+    @permited_params = []
     #URI::decode_www_form("hi[hey]=5", enc=Encoding::UTF_8)
   end
 
